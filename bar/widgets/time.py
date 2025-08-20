@@ -1,5 +1,7 @@
+from ignis import widgets
 
-def clock(widgets.Label):
+def clock() -> widgets.Label:
+    # poll for current time every second
     return widgets.Label(
         css_classes=["clock"],
         label=utils.Poll(

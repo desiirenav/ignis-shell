@@ -1,19 +1,11 @@
 from ignis import widgets
-from widgets import clock
+from bar import bar 
 
-class Bar(widgets.Window):
-    def _init_(self, monitor: int):
-        super().__init__(
-            name="bar",
-            layer="top",
-            anchor= ["left", "top", "right"],
-            margin="5px 10px -2px 5px",
-            exclusivity="auto",
-            visible=False,
+def bar() -> widgets.Window:
+    return widgets.Window(
+            anchor=["left", "top", "right"],
+            exclusivity="exclusive",
             child=widgets.CenterBox(
-                 end_widget=widgets.Box(
-                     child=[clock()]
-                 ),
+                center_widget=center(),
             ),
-        )
-
+    ),
