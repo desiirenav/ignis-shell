@@ -6,11 +6,10 @@ from ignis import widgets
 from ignis import utils
 from ignis.css_manager import CssManager, CssInfoPath
 from ignis.services.audio import AudioService
-from ignis.services.system_tray import SystemTrayService, SystemTrayItem
-from ignis.services.hyprland import HyprlandService, HyprlandWorkspace
 from ignis.services.niri import NiriService, NiriWorkspace
 from ignis.services.notifications import NotificationService
 from ignis.services.mpris import MprisService, MprisPlayer
+from work import client_title, workspaces, niri
 
 css_manager = CssManager.get_default()
 
@@ -24,98 +23,8 @@ css_manager.apply_css(
 
 
 audio = AudioService.get_default()
-system_tray = SystemTrayService.get_default()
-hyprland = HyprlandService.get_default()
-niri = NiriService.get_default()
 notifications = NotificationService.get_default()
 mpris = MprisService.get_default()
-
-
-def niri_workspace_button(workspace: NiriWorkspace) -> widgets.Button:
-    widget = widgets.Button(
-        css_classes=["workspace"],
-        on_click=lambda x: workspace.switch_to(),
-        child=widgets.Label(label=str(workspace.idx)),
-    )
-    if workspace.is_active:
-        widget.add_css_class("active")
-
-    return widget
-
-
-def workspace_button(workspace) -> widgets.Button:
-    if niri.is_available:
-        return niri_workspace_button(workspace)
-    else:
-        return widgets.Button()
-
-
-def niri_scroll_workspaces(monitor_name: str, direction: str) -> None:
-    current = list(
-        filter(lambda w: w.is_active and w.output == monitor_name, niri.workspaces)
-    )[0].idx
-    if direction == "up":
-        target = current + 1
-        niri.switch_to_workspace(target)
-    else:
-        target = current - 1
-        niri.switch_to_workspace(target)
-
-
-def scroll_workspaces(direction: str, monitor_name: str = "") -> None:
-    if niri.is_available:
-        niri_scroll_workspaces(monitor_name, direction)
-    else:
-        pass
-
-
-def niri_workspaces(monitor_name: str) -> widgets.EventBox:
-    return widgets.EventBox(
-        on_scroll_up=lambda x: scroll_workspaces("up", monitor_name),
-        on_scroll_down=lambda x: scroll_workspaces("down", monitor_name),
-        css_classes=["workspaces"],
-        spacing=5,
-        child=niri.bind(
-            "workspaces",
-            transform=lambda value: [
-                workspace_button(i) for i in value if i.output == monitor_name
-            ],
-        ),
-    )
-
-
-def workspaces(monitor_name: str) -> widgets.EventBox:
-    if niri.is_available:
-        return niri_workspaces(monitor_name)
-    else:
-        return widgets.EventBox()
-
-
-
-def niri_client_title(monitor_name) -> widgets.Label:
-    return widgets.Label(
-        ellipsize="end",
-        max_width_chars=40,
-        visible=niri.bind("active_output", lambda output: output == monitor_name),
-        label=niri.active_window.bind("title"),
-    )
-
-
-def client_title(monitor_name: str) -> widgets.Label:
-    if niri.is_available:
-        return niri_client_title(monitor_name)
-    else:
-        return widgets.Label()
-
-
-def current_notification() -> widgets.Label:
-    return widgets.Label(
-        ellipsize="end",
-        max_width_chars=20,
-        label=notifications.bind(
-            "notifications", lambda value: value[-1].summary if len(value) > 0 else None
-        ),
-    )
 
 
 def clock() -> widgets.Label:
@@ -154,7 +63,6 @@ def speaker_slider() -> widgets.Scale:
     )
 
 
-
 def logout() -> None:
     if niri.is_available:
         create_exec_task("niri msg action quit")
@@ -190,7 +98,7 @@ def power_menu() -> widgets.Button:
             IgnisMenuSeparator(),
             IgnisMenuItem(
                 label="Logout",
-                enabled=hyprland.is_available or niri.is_available,
+                enabled=niri.is_available,
                 on_activate=lambda x: logout(),
             ),
         ),
