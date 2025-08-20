@@ -31,8 +31,6 @@ notifications = NotificationService.get_default()
 mpris = MprisService.get_default()
 
 
-
-
 def niri_workspace_button(workspace: NiriWorkspace) -> widgets.Button:
     widget = widgets.Button(
         css_classes=["workspace"],
@@ -93,39 +91,6 @@ def workspaces(monitor_name: str) -> widgets.EventBox:
         return widgets.EventBox()
 
 
-def mpris_title(player: MprisPlayer) -> widgets.Box:
-    return widgets.Box(
-        spacing=10,
-        setup=lambda self: player.connect(
-            "closed",
-            lambda x: self.unparent(),  # remove widget when player is closed
-        ),
-        child=[
-            widgets.Icon(image="audio-x-generic-symbolic"),
-            widgets.Label(
-                ellipsize="end",
-                max_width_chars=20,
-                label=player.bind("title"),
-            ),
-        ],
-    )
-
-
-def media() -> widgets.Box:
-    return widgets.Box(
-        spacing=10,
-        child=[
-            widgets.Label(
-                label="No media players",
-                visible=mpris.bind("players", lambda value: len(value) == 0),
-            )
-        ],
-        setup=lambda self: mpris.connect(
-            "player-added", lambda x, player: self.append(mpris_title(player))
-        ),
-    )
-
-
 
 def niri_client_title(monitor_name) -> widgets.Label:
     return widgets.Label(
@@ -177,35 +142,6 @@ def speaker_volume() -> widgets.Box:
 
 
 
-def tray_item(item: SystemTrayItem) -> widgets.Button:
-    if item.menu:
-        menu = item.menu.copy()
-    else:
-        menu = None
-
-    return widgets.Button(
-        child=widgets.Box(
-            child=[
-                widgets.Icon(image=item.bind("icon"), pixel_size=24),
-                menu,
-            ]
-        ),
-        setup=lambda self: item.connect("removed", lambda x: self.unparent()),
-        tooltip_text=item.bind("tooltip"),
-        on_click=lambda x: menu.popup() if menu else None,
-        on_right_click=lambda x: menu.popup() if menu else None,
-        css_classes=["tray-item"],
-    )
-
-
-def tray():
-    return widgets.Box(
-        setup=lambda self: system_tray.connect(
-            "added", lambda x, item: self.append(tray_item(item))
-        ),
-        spacing=10,
-    )
-
 
 def speaker_slider() -> widgets.Scale:
     return widgets.Scale(
@@ -217,10 +153,6 @@ def speaker_slider() -> widgets.Scale:
         css_classes=["volume-slider"],  # we will customize style in style.css
     )
 
-
-def create_exec_task(cmd: str) -> None:
-    # use create_task to run async function in a regular (sync) one
-    asyncio.create_task(utils.exec_sh_async(cmd))
 
 
 def logout() -> None:
@@ -273,7 +205,7 @@ def power_menu() -> widgets.Button:
 
 def left(monitor_name: str) -> widgets.Box:
     return widgets.Box(
-        child=[client_title(monitor_name)], spacing=10
+        child=[clock(), client_title(monitor_name)], spacing=10
     )
 
 
@@ -281,8 +213,6 @@ def center(monitor_name: str) -> widgets.Box:
     return widgets.Box(
         child=[
             workspaces(monitor_name),
-            media(),
-            current_notification(),
         ],
         spacing=10,
     )
@@ -291,10 +221,8 @@ def center(monitor_name: str) -> widgets.Box:
 def right() -> widgets.Box:
     return widgets.Box(
         child=[
-            tray(),
             speaker_volume(),
             speaker_slider(),
-            clock(),
             power_menu(),
         ],
         spacing=10,
