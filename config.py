@@ -7,7 +7,7 @@ from ignis import utils
 from ignis.css_manager import CssManager, CssInfoPath
 from ignis.services.niri import NiriService, NiriWorkspace
 from workspaces import client_title, workspaces, niri
-from audio import speaker_volume, speaker_slider
+from audio import speaker_volume
 from clock import clock
 from power import logout, power_menu
 from layout import  left, center, right
@@ -30,10 +30,6 @@ def bar(monitor_id: int = 0) -> widgets.Window:
         namespace=f"ignis_bar_{monitor_id}",
         monitor=monitor_id,
         anchor=["left", "top", "right"],
-        margin_top=5,
-        margin_right=500,
-        margin_left=500,
-        margin_bottom=5,
         exclusivity="exclusive",
         child=widgets.CenterBox(
             css_classes=["bar"],

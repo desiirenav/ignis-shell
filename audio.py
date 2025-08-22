@@ -19,12 +19,4 @@ def speaker_volume() -> widgets.Box:
     )
 
 
-def speaker_slider() -> widgets.Scale:
-    return widgets.Scale(
-        min=0,
-        max=100,
-        step=1,
-        value=audio.speaker.bind("volume"),
-        on_change=lambda x: audio.speaker.set_volume(x.value),
-        css_classes=["volume-slider"],  # we will customize style in style.css
-    )
+
